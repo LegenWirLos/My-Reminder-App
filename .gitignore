@@ -1,0 +1,11 @@
+# Backend
+*.db
+node_modules/
+
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# General
+.env
