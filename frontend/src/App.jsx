@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./App.css";
 
 function App() {
   const [reminders, setReminders] = useState([]);
@@ -72,10 +73,10 @@ function App() {
   }
 
   return (
-    <div>
+    <div className="container">
       <h1>Reminders</h1>
 
-      <div>
+      <div className="form">
         <input
           type="text"
           placeholder="Title"
@@ -92,14 +93,16 @@ function App() {
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
         </select>
-        <button onClick={createReminder}>Add Reminder</button>
+        <button className="btn-primary" onClick={createReminder}>
+          Add Reminder
+        </button>
       </div>
 
-      <ul>
+      <ul className="reminder-list" style={{ listStyle: "none", padding: 0 }}>
         {reminders.map((reminder) => (
-          <li key={reminder.id}>
+          <li key={reminder.id} className="reminder-card">
             {editingId === reminder.id ? (
-              <div>
+              <div className="edit-form">
                 <input
                   type="text"
                   value={editTitle}
@@ -118,14 +121,31 @@ function App() {
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
                 </select>
-                <button onClick={() => saveEdit(reminder.id)}>Save</button>
-                <button onClick={cancelEdit}>Cancel</button>
+                <div className="edit-actions">
+                  <button className="btn-primary" onClick={() => saveEdit(reminder.id)}>
+                    Save
+                  </button>
+                  <button className="btn-secondary" onClick={cancelEdit}>
+                    Cancel
+                  </button>
+                </div>
               </div>
             ) : (
-              <div>
-                {reminder.title} — {reminder.nextTriggerAt} — {reminder.repeatType}
-                <button onClick={() => startEditing(reminder)}>Edit</button>
-                <button onClick={() => deleteReminder(reminder.id)}>Delete</button>
+              <div className="reminder-info">
+                <div>
+                  <div className="reminder-title">{reminder.title}</div>
+                  <div className="reminder-meta">
+                    {new Date(reminder.nextTriggerAt).toLocaleString()} · {reminder.repeatType}
+                  </div>
+                </div>
+                <div className="reminder-actions">
+                  <button className="btn-secondary" onClick={() => startEditing(reminder)}>
+                    Edit
+                  </button>
+                  <button className="btn-danger" onClick={() => deleteReminder(reminder.id)}>
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
           </li>
