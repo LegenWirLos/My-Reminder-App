@@ -10,14 +10,31 @@ function App() {
   const [editTitle, setEditTitle] = useState("");
   const [editNextTriggerAt, setEditNextTriggerAt] = useState("");
   const [editRepeatType, setEditRepeatType] = useState("once");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/reminders")
-      .then((res) => res.json())
-      .then((data) => setReminders(data));
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch reminders");
+        return res.json();
+      })
+      .then((data) => setReminders(data))
+      .catch((err) => setError(err.message));
   }, []);
 
-  function createReminder() {
+function createReminder() {
+    if (!title.trim()) {
+      setError("Please complete all fields.");
+      return;
+    }
+    if (!nextTriggerAt || isNaN(new Date(nextTriggerAt))) {
+      setError("Please enter a valid date and time.");
+      return;
+    }
+
+    setLoading(true); // start loading
+
     fetch("http://localhost:5000/reminders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -27,21 +44,31 @@ function App() {
         repeatType,
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to create reminder");
+        return res.json();
+      })
       .then((newReminder) => {
         setReminders([...reminders, newReminder]);
         setTitle("");
         setNextTriggerAt("");
         setRepeatType("once");
-      });
+        setError(null);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false)); // stop loading either way
   }
 
   function deleteReminder(id) {
     fetch(`http://localhost:5000/reminders/${id}`, {
       method: "DELETE",
-    }).then(() => {
-      setReminders(reminders.filter((reminder) => reminder.id !== id));
-    });
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to delete reminder");
+        setReminders(reminders.filter((reminder) => reminder.id !== id));
+        setError(null);
+      })
+      .catch((err) => setError(err.message));
   }
 
   function startEditing(reminder) {
@@ -52,6 +79,15 @@ function App() {
   }
 
   function saveEdit(id) {
+    if (!editTitle.trim()) {
+      setError("Please enter a title.");
+      return;
+    }
+    if (!editNextTriggerAt || isNaN(new Date(editNextTriggerAt))) {
+      setError("Please enter a valid date and time.");
+      return;
+    }
+
     fetch(`http://localhost:5000/reminders/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -61,11 +97,16 @@ function App() {
         repeatType: editRepeatType,
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to update reminder");
+        return res.json();
+      })
       .then((updatedReminder) => {
         setReminders(reminders.map((r) => (r.id === id ? updatedReminder : r)));
         setEditingId(null);
-      });
+        setError(null);
+      })
+      .catch((err) => setError(err.message));
   }
 
   function cancelEdit() {
@@ -75,6 +116,13 @@ function App() {
   return (
     <div className="container">
       <h1>Reminders</h1>
+
+      {error && (
+        <div className="error-banner">
+          {error}
+          <button onClick={() => setError(null)}>✕</button>
+        </div>
+      )}
 
       <div className="form">
         <input
@@ -93,8 +141,8 @@ function App() {
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
         </select>
-        <button className="btn-primary" onClick={createReminder}>
-          Add Reminder
+        <button className="btn-primary" onClick={createReminder} disabled={loading}>
+          {loading ? "Adding..." : "Add Reminder"}
         </button>
       </div>
 
