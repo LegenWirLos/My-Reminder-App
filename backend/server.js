@@ -23,23 +23,38 @@ app.get("/reminders", (req, res) => {
     res.json(reminders);
 });
 
+function validateReminder({ title, nextTriggerAt, repeatType }) {
+    const validRepeatTypes = ["once", "daily", "weekly"];
+
+    if (!title || typeof title !== "string" || !title.trim())
+        return "Title is required.";
+    if (!nextTriggerAt || isNaN(Date.parse(nextTriggerAt)))
+        return "A valid date and time is required.";
+    if (!validRepeatTypes.includes(repeatType))
+        return `repeatType must be one of: ${validRepeatTypes.join(", ")}`;
+
+    return null;
+}
+
 app.post("/reminders", (req, res) => {
     const { title, nextTriggerAt, repeatType } = req.body;
 
-    console.log("Incoming reminder:", { title, nextTriggerAt, repeatType }); 
+    console.log("Incoming reminder:", { title, nextTriggerAt, repeatType });
+
+    const error = validateReminder({ title, nextTriggerAt, repeatType });
+    if (error) return res.status(400).json({ message: error });
 
     const stmt = db.prepare("INSERT INTO reminders (id, title, nextTriggerAt, repeatType) VALUES (?, ?, ?, ?)");
     const id = Date.now();
     stmt.run(id, title, nextTriggerAt, repeatType);
     res.status(201).json({ id, title, nextTriggerAt, repeatType });
-
 });
 
 app.patch("/reminders/:id", (req, res) => {
     const id = Number(req.params.id);
     const reminder = db.prepare("SELECT * FROM reminders WHERE id = ?").get(id);
 
-     console.log("Incoming update for ID:", id, "with data:", req.body); // add this
+    console.log("Incoming update for ID:", id, "with data:", req.body);
 
     if (!reminder) {
         return res.status(404).json({ message: "Reminder not found" });
@@ -48,6 +63,9 @@ app.patch("/reminders/:id", (req, res) => {
     const updatedTitle = req.body.title !== undefined ? req.body.title : reminder.title;
     const updatedNextTriggerAt = req.body.nextTriggerAt !== undefined ? req.body.nextTriggerAt : reminder.nextTriggerAt;
     const updatedRepeatType = req.body.repeatType !== undefined ? req.body.repeatType : reminder.repeatType;
+
+    const error = validateReminder({ title: updatedTitle, nextTriggerAt: updatedNextTriggerAt, repeatType: updatedRepeatType });
+    if (error) return res.status(400).json({ message: error });
 
     db.prepare("UPDATE reminders SET title = ?, nextTriggerAt = ?, repeatType = ? WHERE id = ?")
       .run(updatedTitle, updatedNextTriggerAt, updatedRepeatType, id);
