@@ -1,11 +1,23 @@
-# Backend
-*.db
+# Next.js build output
+.next/
+out/
+
+# Dependencies
 node_modules/
-
-
-# Frontend
 frontend/node_modules/
 frontend/dist/
+backend/node_modules/
 
-# General
+# SQLite database (personal data — don't commit)
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
 .env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
