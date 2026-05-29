@@ -9,6 +9,8 @@ async function tokenFor(password) {
 export async function POST(request) {
   const { password } = await request.json()
 
+  console.log('APP_PASSWORD set:', !!process.env.APP_PASSWORD, '| length:', process.env.APP_PASSWORD?.length)
+
   if (!password || password !== process.env.APP_PASSWORD) {
     return NextResponse.json({ error: 'Wrong password' }, { status: 401 })
   }
