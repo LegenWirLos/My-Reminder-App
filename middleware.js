@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 // runs before every request — checks for a valid auth cookie
 // public paths that don't need a login
-const PUBLIC = ['/login', '/api/auth']
+const PUBLIC = ['/login', '/api/auth', '/manifest.json', '/sw.js', '/favicon.ico']
 
 async function tokenFor(password) {
   const data = new TextEncoder().encode('reminders_v1:' + password)
