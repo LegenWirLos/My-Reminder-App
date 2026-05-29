@@ -127,7 +127,7 @@ export default function HomePage() {
             <div className="text-center py-16 text-slate-400">
               <div className="text-5xl mb-3">🎉</div>
               <p className="font-medium text-slate-500">No reminders yet!</p>
-              <p className="text-sm mt-1">Use the quick-add bar or hit "New" to get started.</p>
+              <p className="text-sm mt-1">Use the quick-add bar or hit &quot;New&quot; to get started.</p>
             </div>
           ) : (
             <div className="space-y-3">
